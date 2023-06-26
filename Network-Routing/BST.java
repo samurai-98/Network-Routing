@@ -1,61 +1,45 @@
+import java.net.UnknownHostException;
+
 public class BST {
-    class Node {
-        private String name;
-        private String ipAddress;
-        private String subnetMask;
-        private Node left, right;
 
-        public Node (String deviceName, String ip, String subnet) {
-            this.name = deviceName;
-            this.ipAddress = ip;
-            this.subnetMask = subnet;
-            this.left = null;
-            this.right = null;
-        }
-
-        public void printNodeInfo() {
-            System.out.println("\nDevice name: " + this.name + "\nIP address: " + this.ipAddress + "\nSubnet mask: " + this.subnetMask + "\n");
-        }
-    }
-
-    private Node root;
+    private Router root;
 
     public BST() {
         this.root = null;
     }
 
-    private Node recursiveInsert(Node rootNode, String deviceName, String ip, String subnet) {
-        if (rootNode == null) {
-            return new Node(deviceName, ip, subnet);
+    private Router recursiveInsert(Router router, String deviceName, String ip, int subnet, String ipStart, String ipEnd) {
+        if (router == null) {
+            return new Router(deviceName, ip, subnet, ipStart, ipEnd);
         }
 
-        if (ip.compareTo(rootNode.ipAddress) < 0) {
-            rootNode.left = recursiveInsert(rootNode.left, deviceName, ip, subnet);
+        if (ip.compareTo(router.ipAddress) < 0) {
+            router.left = recursiveInsert(router.left, deviceName, ip, subnet, ipStart, ipEnd);
         } else {
-            rootNode.right = recursiveInsert(rootNode.right, deviceName, ip, subnet);
+            router.right = recursiveInsert(router.right, deviceName, ip, subnet, ipStart, ipEnd);
         }
 
-        return rootNode;
+        return router;
     }
 
-    public void insert(String deviceName, String ip, String subnet) {
+    public void insert(String deviceName, String ip, int subnet, String ipStart, String ipEnd) {
         if (treeSearch(ip)) {
             System.out.println(ip + " already exists in the network.");
             return;
         } else {
-            this.root = recursiveInsert(this.root, deviceName, ip, subnet);
+            this.root = recursiveInsert(this.root, deviceName, ip, subnet, ipStart, ipEnd);
         }
     }
 
-    private boolean recursiveSearch(Node rootNode, String ip) {
-        if (rootNode == null) {
+    private boolean recursiveSearch(Router router, String ip) {
+        if (router == null) {
             return false;
-        } else if (rootNode.ipAddress.equals(ip)) {
+        } else if (router.ipAddress.equals(ip)) {
             return true;
-        } else if (ip.compareTo(rootNode.ipAddress) < 0) {
-            return recursiveSearch(rootNode.left, ip);
+        } else if (ip.compareTo(router.ipAddress) < 0) {
+            return recursiveSearch(router.left, ip);
         } else  {
-            return recursiveSearch(rootNode.right, ip);
+            return recursiveSearch(router.right, ip);
         }
     }
 
@@ -63,11 +47,11 @@ public class BST {
         return recursiveSearch(this.root, ip);
     }
 
-    private void recursiveInorder(Node rootNode) {
-        if (rootNode != null) {
-            recursiveInorder(rootNode.left);
-            System.out.println(rootNode.ipAddress + " ");
-            recursiveInorder(rootNode.right);
+    private void recursiveInorder(Router router) {
+        if (router != null) {
+            recursiveInorder(router.left);
+            System.out.println(router.ipAddress + " ");
+            recursiveInorder(router.right);
         }
     }
 
@@ -75,55 +59,55 @@ public class BST {
         recursiveInorder(this.root);
     }
 
-    private Node recursiveFindNode(Node rootNode, String ip) {
-        if (rootNode.ipAddress.equals(ip)) {
-            return rootNode;
-        } else if (ip.compareTo(rootNode.ipAddress) < 0) {
-            return recursiveFindNode(rootNode.left, ip);
+    private Router recursiveFindRouter(Router router, String ip) {
+        if (router.ipAddress.equals(ip)) {
+            return router;
+        } else if (ip.compareTo(router.ipAddress) < 0) {
+            return recursiveFindRouter(router.left, ip);
         } else {
-            return recursiveFindNode(rootNode.right, ip);
+            return recursiveFindRouter(router.right, ip);
         }
     }
 
-    public void printNode(String ip) {
+    public void printRouter(String ip) {
         if (treeSearch(ip)) {
-            recursiveFindNode(this.root, ip).printNodeInfo();
+            recursiveFindRouter(this.root, ip).printRouterInfo();
         } else {
-            System.out.println("IP address not found");
+            System.out.println("Router not found");
         }
     }
 
-    private Node getSuccessor(Node node) {
-        while(node.left != null) {
-            node = node.left;
+    private Router getSuccessor(Router router) {
+        while(router.left != null) {
+            router = router.left;
         }
-        return node;
+        return router;
     }
 
-    private Node removeHelper(Node rootNode, String ip) {
-        if (rootNode == null) {
+    private Router removeHelper(Router router, String ip) {
+        if (router == null) {
             return null;
         }
 
-        if (ip.compareTo(rootNode.ipAddress) < 0) {
-            rootNode.left = removeHelper(rootNode.left, ip);
-        } else if (ip.compareTo(rootNode.ipAddress) > 0) {
-            rootNode.right = removeHelper(rootNode.right, ip);
+        if (ip.compareTo(router.ipAddress) < 0) {
+            router.left = removeHelper(router.left, ip);
+        } else if (ip.compareTo(router.ipAddress) > 0) {
+            router.right = removeHelper(router.right, ip);
         } else {
-            if (rootNode.left == null) {
-                return rootNode.right;
-            } else if (rootNode.right == null) {
-                return rootNode.left;
+            if (router.left == null) {
+                return router.right;
+            } else if (router.right == null) {
+                return router.left;
             } else {
-                Node successor = getSuccessor(rootNode.right);
-                rootNode.name = successor.name;
-                rootNode.ipAddress = successor.ipAddress;
-                rootNode.subnetMask = successor.subnetMask;
-                rootNode.right = removeHelper(rootNode.right, successor.ipAddress);
+                Router successor = getSuccessor(router.right);
+                router.name = successor.name;
+                router.ipAddress = successor.ipAddress;
+                router.subnetMask = successor.subnetMask;
+                router.right = removeHelper(router.right, successor.ipAddress);
             }
         }
 
-        return rootNode;
+        return router;
     }
 
     public void remove(String ip) {
@@ -131,6 +115,14 @@ public class BST {
             this.root = removeHelper(this.root, ip);
         } else {
             System.out.println("IP address not found");
+        }
+    }
+
+    public void addDeviceToRouter(String routerIp, String deviceName) throws UnknownHostException {
+        if (treeSearch(routerIp)) {
+            recursiveFindRouter(this.root, routerIp).addDevice(deviceName);
+        } else {
+            System.out.println("Router not found");
         }
     }
 }
