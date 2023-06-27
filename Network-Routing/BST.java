@@ -1,5 +1,3 @@
-import java.net.UnknownHostException;
-
 public class BST {
 
     private Router root;
@@ -8,26 +6,26 @@ public class BST {
         this.root = null;
     }
 
-    private Router recursiveInsert(Router router, String deviceName, String ip, int subnet, String ipStart, String ipEnd) {
+    private Router recursiveInsert(Router router, String deviceName, String ip, int subnet) {
         if (router == null) {
-            return new Router(deviceName, ip, subnet, ipStart, ipEnd);
+            return new Router(deviceName, ip, subnet);
         }
 
         if (ip.compareTo(router.ipAddress) < 0) {
-            router.left = recursiveInsert(router.left, deviceName, ip, subnet, ipStart, ipEnd);
+            router.left = recursiveInsert(router.left, deviceName, ip, subnet);
         } else {
-            router.right = recursiveInsert(router.right, deviceName, ip, subnet, ipStart, ipEnd);
+            router.right = recursiveInsert(router.right, deviceName, ip, subnet);
         }
 
         return router;
     }
 
-    public void insert(String deviceName, String ip, int subnet, String ipStart, String ipEnd) {
+    public void insert(String deviceName, String ip, int subnet) {
         if (treeSearch(ip)) {
             System.out.println(ip + " already exists in the network.");
             return;
         } else {
-            this.root = recursiveInsert(this.root, deviceName, ip, subnet, ipStart, ipEnd);
+            this.root = recursiveInsert(this.root, deviceName, ip, subnet);
         }
     }
 
@@ -118,7 +116,7 @@ public class BST {
         }
     }
 
-    public void addDeviceToRouter(String routerIp, String deviceName) throws UnknownHostException {
+    public void addDeviceToRouter(String routerIp, String deviceName) {
         if (treeSearch(routerIp)) {
             recursiveFindRouter(this.root, routerIp).addDevice(deviceName);
         } else {
