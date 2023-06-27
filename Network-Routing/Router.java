@@ -1,8 +1,7 @@
 import java.lang.Math;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-//import java.net.InetAddress;
-//import java.net.UnknownHostException;
 
 public class Router {
     public String name;
@@ -17,7 +16,9 @@ public class Router {
     public String ipRangeStart;
     public String ipRangeEnd;
 
-    public Router (String routerName, String ip, int subnet, String rangeStart, String rangeEnd) {
+
+    //Router class constructor
+    public Router (String routerName, String ip, int subnet) {
         this.ipRangeArray = new ArrayList<>();
         this.name = routerName;
         this.ipAddress = ip;
@@ -28,11 +29,25 @@ public class Router {
         this.ipAvail = calculateAvailIp();
         this.left = null;
         this.right = null;
-        this.ipRangeStart = rangeStart;
-        this.ipRangeEnd = rangeEnd;
-        this.ipRangeArray = new ArrayList<>();
+
+        int[] tmpArray1 = Arrays.copyOf(this.ipOctets, this.ipOctets.length);
+
+        for (int i = 0; i < 4; i++) {
+            tmpArray1[i] = tmpArray1[i] & (this.subnetMaskBytes >> (24 - (8*i)));
+        }
+
+        this.ipRangeStart = tmpArray1[0] + "." + tmpArray1[1] + "." + tmpArray1[2] + "." + tmpArray1[3];
+
+        int[] tmpArray2 = Arrays.copyOf(this.ipOctets, this.ipOctets.length);
+
+        for (int i = 0; i < 4; i++) {
+            tmpArray2[i] = tmpArray2[i] | (~this.subnetMaskBytes >> (24 - (8*i)));
+        }
+
+        this.ipRangeEnd = tmpArray2[0] + "." + tmpArray2[1] + "." + tmpArray2[2] + "." + tmpArray2[3];
     }
 
+    //Prints router information and the information of its connected devices
     public void printRouterInfo() {
         System.out.println("\nRouter name: " + this.name + "\nIP address: " + this.ipAddress + "/" + this.subnetMask + "\n" + "Devices:");
 
@@ -41,7 +56,8 @@ public class Router {
         }
     }
 
-    public void addDevice(String deviceName) /*throws UnknownHostException*/ {
+    //Connects a new device to a router
+    public void addDevice(String deviceName) {
         String deviceIp = getAvailIP();
         if(deviceIp != null) {
             Device device = new Device(deviceName, deviceIp);
@@ -51,10 +67,9 @@ public class Router {
         } else {
             System.out.println("No available IP addresses");
         }
-        
-        
     }
 
+    //Splits an IPv4 address into its individual octets and saves each one as an element in an array
     private int[] ipOctetSplit(String ip) {
         String[] parts = ip.split("\\.");
         int[] ipSections = new int[parts.length];
@@ -64,6 +79,7 @@ public class Router {
         return ipSections;
     }
 
+    //splits the subnet mask into 8 bit segments and saves each segment as an array element
     private void getMaskOctets(int mask) {
         this.subnetMaskOctets = new byte[4];
         this.subnetMaskOctets[0] = (byte)((mask >> 24) & 0xFF);
@@ -72,20 +88,24 @@ public class Router {
         this.subnetMaskOctets[3] = (byte)(mask & 0xFF);
     }
 
+    //Initializes the amount of available IP addresses based on the subnet mask
     private int calculateAvailIp() {
         int tmp = 32 - this.subnetMask;
         return (int) Math.pow(2, tmp) - 2;
     }
 
+    //Generates an IP address for a device to receive 
     private String getAvailIP() {
+        if (this.ipAvail == 0) {
+            return null;
+        }
         String currIP = this.ipRangeStart;
         int[] currOctets = ipOctetSplit(currIP);
-        //int[] endOctets = ipOctetSplit(this.ipRangeEnd);
 
         while (!currIP.equals(this.ipRangeEnd)) {
             boolean isAvail = true;
             for (Device device : ipRangeArray) {
-                if (device.ipAddress.equals(currIP)) {
+                if (device.ipAddress.equals(currIP) || this.ipAddress.equals(currIP)) {
                     isAvail = false;
                     break;
                 }
@@ -107,7 +127,7 @@ public class Router {
 
         boolean isAvail = true;
         for (Device device : ipRangeArray) {
-            if (device.ipAddress.equals(currIP)) {
+            if (device.ipAddress.equals(currIP) || this.ipAddress.equals(currIP)) {
                 isAvail = false;
                 break;
             }
