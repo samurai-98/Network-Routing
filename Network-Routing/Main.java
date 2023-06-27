@@ -1,4 +1,3 @@
-import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class Main {
@@ -13,7 +12,7 @@ public class Main {
         System.out.println("7: Exit");
     }
 
-    public static void main(String[] args) throws UnknownHostException {
+    public static void main(String[] args) {
         // This is just a test scenario to guarantee that all functions work
         BST testTree = new BST();
         boolean cont = true;
@@ -38,15 +37,11 @@ public class Main {
                 System.out.println("[ADD] Subnet mask: ");
                 int subnet = sc.nextInt();
                 sc.nextLine();
-                System.out.println("[ADD] IP range start: ");
-                String start = sc.nextLine();
-                System.out.println("[ADD] IP range end: ");
-                String end = sc.nextLine();
-                testTree.insert(newName, address, subnet, start, end);
+                testTree.insert(newName, address, subnet);
 
             } else if(decision == 2) {
 
-                System.out.println("[SEARCH] IP address: ");
+                System.out.println("[SEARCH] Router IP address: ");
                 String address = sc.nextLine();
                 if(testTree.treeSearch(address)) {
                     System.out.println(address + " is in the network");
@@ -60,23 +55,28 @@ public class Main {
 
             } else if (decision == 4){
 
-                System.out.println("[PRINT] IP address: ");
+                System.out.println("[PRINT] Router IP address: ");
                 String address = sc.nextLine();
                 testTree.printRouter(address);
 
             } else if (decision == 5) {
 
-                System.out.println("[REMOVE] IP address: ");
+                System.out.println("[REMOVE] Router IP address: ");
                 String address = sc.nextLine();
                 testTree.remove(address);
 
             } else if (decision == 6) {
 
-                System.out.println("[NEW DEVICE] IP address: ");
+                System.out.println("[NEW DEVICE] Router IP address: ");
                 String address = sc.nextLine();
-                System.out.println("[NEW DEVICE] Name: ");
-                String newName = sc.nextLine();
-                testTree.addDeviceToRouter(address, newName);
+                if (testTree.treeSearch(address)) {
+                    System.out.println("[NEW DEVICE] Device name: ");
+                    String newName = sc.nextLine();
+                    testTree.addDeviceToRouter(address, newName);
+                } else {
+                    System.out.println("Router not found");
+                }
+                
 
             } else if (decision == 7) {
                 cont = false;
