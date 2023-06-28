@@ -14,7 +14,7 @@ public class Main {
 
     public static void main(String[] args) {
         // This is just a test scenario to guarantee that all functions work
-        BST testTree = new BST();
+        Network testTree = new Network();
         boolean cont = true;
         int decision;
 
