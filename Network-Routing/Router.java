@@ -15,6 +15,7 @@ public class Router {
     public Router left, right;
     public String ipRangeStart;
     public String ipRangeEnd;
+    public int height;
 
 
     //Router class constructor
@@ -29,6 +30,7 @@ public class Router {
         this.ipAvail = calculateAvailIp();
         this.left = null;
         this.right = null;
+        this.height = 1;
 
         int[] tmpArray1 = Arrays.copyOf(this.ipOctets, this.ipOctets.length);
 
