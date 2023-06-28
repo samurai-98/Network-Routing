@@ -1,9 +1,25 @@
+import java.lang.Math;
+
 public class BST {
 
     private Router root;
 
     public BST() {
         this.root = null;
+    }
+
+    private int getHeight(Router router) {
+        if (router == null) {
+            return 0;
+        }
+        return router.height;
+    }
+
+    private int getBalance(Router router) {
+        if (router == null) {
+            return 0;
+        }
+        return getHeight(router.left) - getHeight(router.right);
     }
 
     private Router recursiveInsert(Router router, String deviceName, String ip, int subnet) {
@@ -17,8 +33,36 @@ public class BST {
             router.right = recursiveInsert(router.right, deviceName, ip, subnet);
         }
 
+        //Begin AVL section
+
+        int leftHeight = (router.left != null) ? router.left.height : 0;
+        int rightHeight = (router.right != null) ? router.right.height : 0;
+
+        router.height = Math.max(leftHeight, rightHeight) + 1;
+
+        int balance = getBalance(router);
+
+        if (balance > 1 && ip.compareTo(router.left.ipAddress) < 0) {
+            return rotateRight(router);
+        }
+
+        if (balance < -1 && ip.compareTo(router.right.ipAddress) > 0) {
+            return rotateLeft(router);
+        }
+
+        if (balance > 1 && ip.compareTo(router.left.ipAddress) > 0) {
+            router.left = rotateLeft(router.left);
+            return rotateRight(router);
+        }
+
+        if (balance < -1 && ip.compareTo(router.right.ipAddress) < 0) {
+            router.right = rotateRight(router.right);
+            return rotateLeft(router);
+        }
+
         return router;
     }
+
 
     public void insert(String deviceName, String ip, int subnet) {
         if (treeSearch(ip)) {
@@ -48,7 +92,7 @@ public class BST {
     private void recursiveInorder(Router router) {
         if (router != null) {
             recursiveInorder(router.left);
-            System.out.println(router.ipAddress + " ");
+            router.printRouterInfo();
             recursiveInorder(router.right);
         }
     }
@@ -75,11 +119,15 @@ public class BST {
         }
     }
 
-    private Router getSuccessor(Router router) {
+    private Router recursiveGetSuccessor(Router router) {
         while(router.left != null) {
             router = router.left;
         }
         return router;
+    }
+
+    private Router getSuccessor(Router router) {
+       return recursiveGetSuccessor(router.right);
     }
 
     private Router removeHelper(Router router, String ip) {
@@ -105,6 +153,33 @@ public class BST {
             }
         }
 
+        //Begin AVL section
+
+        int leftHeight = (router.left != null) ? router.left.height : 0;
+        int rightHeight = (router.right != null) ? router.right.height : 0;
+
+        router.height = Math.max(leftHeight, rightHeight) + 1;
+
+        int balance = getBalance(router);
+
+        if (balance > 1 && getBalance(router.left) >= 0) {
+            return rotateRight(router);
+        }
+
+        if (balance < -1 && getBalance(router.right) <= 0) {
+            return rotateLeft(router);
+        }
+
+        if (balance > 1 && getBalance(router.left) < 0) {
+            router.left = rotateLeft(router.left);
+            return rotateRight(router);
+        }
+
+        if (balance < -1 && getBalance(router.right) > 0) {
+            router.right = rotateRight(router.right);
+            return rotateLeft(router);
+        }
+
         return router;
     }
 
@@ -122,5 +197,33 @@ public class BST {
         } else {
             System.out.println("Router not found");
         }
+    }
+
+    private Router rotateRight(Router router) {
+        Router tmp1 = router.left;
+        Router tmp2 = tmp1.right;
+
+        tmp1.right = router;
+        router.left = tmp2;
+
+        router.height = Math.max(getHeight(router.left), getHeight(router.right)) + 1;
+        tmp1.height = Math.max(getHeight(tmp1.left), getHeight(tmp1.right)) + 1;
+
+
+        return tmp1;
+    }
+
+    private Router rotateLeft(Router router) {
+        Router tmp1 = router.right;
+        Router tmp2 = tmp1.left;
+
+        tmp1.left = router;
+        router.right = tmp2;
+
+        router.height = Math.max(getHeight(router.left), getHeight(router.right)) + 1;
+        tmp1.height = Math.max(getHeight(tmp1.left), getHeight(tmp1.right)) + 1;
+
+
+        return tmp1;
     }
 }
