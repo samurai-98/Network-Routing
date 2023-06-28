@@ -1,10 +1,10 @@
 import java.lang.Math;
 
-public class BST {
+public class Network {
 
     private Router root;
 
-    public BST() {
+    public Network() {
         this.root = null;
     }
 
