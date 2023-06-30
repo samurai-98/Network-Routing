@@ -1,7 +1,8 @@
-import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Router {
     public String name;
@@ -11,16 +12,17 @@ public class Router {
     public int subnetMaskBytes;
     public byte[] subnetMaskOctets;
     public int ipAvail;
-    public List<Device> ipRangeArray;
+    public List<Device> deviceArray;
     public Router left, right;
     public String ipRangeStart;
     public String ipRangeEnd;
     public int height;
+    public Set<String> allocatedIps = new HashSet<>();
 
 
     //Router class constructor
     public Router (String routerName, String ip, int subnet) {
-        this.ipRangeArray = new ArrayList<>();
+        this.deviceArray = new ArrayList<>();
         this.name = routerName;
         this.ipAddress = ip;
         this.ipOctets = ipOctetSplit(ip);
@@ -38,7 +40,7 @@ public class Router {
             tmpArray1[i] = tmpArray1[i] & (this.subnetMaskBytes >> (24 - (8*i)));
         }
 
-        this.ipRangeStart = tmpArray1[0] + "." + tmpArray1[1] + "." + tmpArray1[2] + "." + tmpArray1[3];
+        this.ipRangeStart = octetToStr(tmpArray1);
 
         int[] tmpArray2 = Arrays.copyOf(this.ipOctets, this.ipOctets.length);
 
@@ -46,15 +48,27 @@ public class Router {
             tmpArray2[i] = tmpArray2[i] | (~this.subnetMaskBytes >> (24 - (8*i)));
         }
 
-        this.ipRangeEnd = tmpArray2[0] + "." + tmpArray2[1] + "." + tmpArray2[2] + "." + tmpArray2[3];
+        this.ipRangeEnd = octetToStr(tmpArray2);
+    }
+
+    private String octetToStr(int[] tmp) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < 4; i++) {
+            sb.append(tmp[i]);
+            if (i < 3) {
+                sb.append(".");
+            }
+        }
+        return sb.toString();
     }
 
     //Prints router information and the information of its connected devices
     public void printRouterInfo() {
         System.out.println("\nRouter name: " + this.name + "\nIP address: " + this.ipAddress + "/" + this.subnetMask + "\n" + "Devices:");
 
-        for (int i = 0; i < ipRangeArray.size(); i++) {
-            System.out.println(ipRangeArray.get(i).name + " - " + ipRangeArray.get(i).ipAddress);
+        for (int i = 0; i < deviceArray.size(); i++) {
+            System.out.println(deviceArray.get(i).name + " - " + deviceArray.get(i).ipAddress);
         }
     }
 
@@ -63,7 +77,8 @@ public class Router {
         String deviceIp = getAvailIP();
         if(deviceIp != null) {
             Device device = new Device(deviceName, deviceIp);
-            this.ipRangeArray.add(device);
+            this.deviceArray.add(device);
+            this.allocatedIps.add(deviceIp);
             ipAvail--;
             System.out.println(deviceName + " added with IP address " + deviceIp);
         } else {
@@ -105,14 +120,7 @@ public class Router {
         int[] currOctets = ipOctetSplit(currIP);
 
         while (!currIP.equals(this.ipRangeEnd)) {
-            boolean isAvail = true;
-            for (Device device : ipRangeArray) {
-                if (device.ipAddress.equals(currIP) || this.ipAddress.equals(currIP)) {
-                    isAvail = false;
-                    break;
-                }
-            }
-            if (isAvail) {
+            if (!allocatedIps.contains(currIP) && !this.ipAddress.equals(currIP)) {
                 return currIP;
             }
 
@@ -124,19 +132,13 @@ public class Router {
                 }
             }
 
-            currIP = currOctets[0] + "." + currOctets[1] + "." + currOctets[2] + "." + currOctets[3];
+            currIP = octetToStr(currOctets);
         }
 
-        boolean isAvail = true;
-        for (Device device : ipRangeArray) {
-            if (device.ipAddress.equals(currIP) || this.ipAddress.equals(currIP)) {
-                isAvail = false;
-                break;
-            }
-        }
-        if (isAvail) {
+        if (!allocatedIps.contains(currIP) && !this.ipAddress.equals(currIP)) {
             return currIP;
         }
         return null;
     }
+
 }
