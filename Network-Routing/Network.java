@@ -51,7 +51,7 @@ public class Network {
             return rotateLeft(router);
         }
 
-        router.height = Math.max(router.left.height, router.right.height) + 1;
+        router.height = Math.max(getHeight(router.left), getHeight(router.right)) + 1;
 
         return router;
     }
@@ -164,7 +164,7 @@ public class Network {
             return rotateLeft(router);
         }
 
-        router.height = Math.max(router.left.height, router.right.height) + 1;
+        router.height = Math.max(getHeight(router.left), getHeight(router.right)) + 1;
 
         return router;
     }
