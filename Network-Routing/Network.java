@@ -1,5 +1,3 @@
-import java.lang.Math;
-
 public class Network {
 
     private Router root;
@@ -33,13 +31,6 @@ public class Network {
             router.right = recursiveInsert(router.right, deviceName, ip, subnet);
         }
 
-        //Begin AVL section
-
-        int leftHeight = (router.left != null) ? router.left.height : 0;
-        int rightHeight = (router.right != null) ? router.right.height : 0;
-
-        router.height = Math.max(leftHeight, rightHeight) + 1;
-
         int balance = getBalance(router);
 
         if (balance > 1 && ip.compareTo(router.left.ipAddress) < 0) {
@@ -60,9 +51,10 @@ public class Network {
             return rotateLeft(router);
         }
 
+        router.height = Math.max(router.left.height, router.right.height) + 1;
+
         return router;
     }
-
 
     public void insert(String deviceName, String ip, int subnet) {
         if (treeSearch(ip)) {
@@ -73,20 +65,19 @@ public class Network {
         }
     }
 
-    private boolean recursiveSearch(Router router, String ip) {
-        if (router == null) {
-            return false;
-        } else if (router.ipAddress.equals(ip)) {
-            return true;
-        } else if (ip.compareTo(router.ipAddress) < 0) {
-            return recursiveSearch(router.left, ip);
-        } else  {
-            return recursiveSearch(router.right, ip);
-        }
-    }
-
     public boolean treeSearch(String ip) {
-        return recursiveSearch(this.root, ip);
+        Router curr = this.root;
+
+        while (curr != null) {
+            if (curr.ipAddress.equals(ip)) {
+                return true;
+            } else if (ip.compareTo(curr.ipAddress) < 0) {
+                curr = curr.left;
+            } else {
+                curr = curr.right;
+            }
+        }
+        return false;
     }
 
     private void recursiveInorder(Router router) {
@@ -119,15 +110,13 @@ public class Network {
         }
     }
 
-    private Router recursiveGetSuccessor(Router router) {
-        while(router.left != null) {
-            router = router.left;
-        }
-        return router;
-    }
-
     private Router getSuccessor(Router router) {
-       return recursiveGetSuccessor(router.right);
+        Router curr = router.right;
+        
+        while (curr.left != null) {
+            curr = curr.left;
+        }
+        return curr;
     }
 
     private Router removeHelper(Router router, String ip) {
@@ -153,32 +142,29 @@ public class Network {
             }
         }
 
-        //Begin AVL section
-
-        int leftHeight = (router.left != null) ? router.left.height : 0;
-        int rightHeight = (router.right != null) ? router.right.height : 0;
-
-        router.height = Math.max(leftHeight, rightHeight) + 1;
-
         int balance = getBalance(router);
+        int balanceLeft = getBalance(router.left);
+        int balanceRight = getBalance(router.right);
 
-        if (balance > 1 && getBalance(router.left) >= 0) {
+        if (balance > 1 && balanceLeft >= 0) {
             return rotateRight(router);
         }
 
-        if (balance < -1 && getBalance(router.right) <= 0) {
+        if (balance < -1 && balanceRight <= 0) {
             return rotateLeft(router);
         }
 
-        if (balance > 1 && getBalance(router.left) < 0) {
+        if (balance > 1 && balanceLeft < 0) {
             router.left = rotateLeft(router.left);
             return rotateRight(router);
         }
 
-        if (balance < -1 && getBalance(router.right) > 0) {
+        if (balance < -1 && balanceRight > 0) {
             router.right = rotateRight(router.right);
             return rotateLeft(router);
         }
+
+        router.height = Math.max(router.left.height, router.right.height) + 1;
 
         return router;
     }
@@ -208,7 +194,6 @@ public class Network {
 
         router.height = Math.max(getHeight(router.left), getHeight(router.right)) + 1;
         tmp1.height = Math.max(getHeight(tmp1.left), getHeight(tmp1.right)) + 1;
-
 
         return tmp1;
     }
