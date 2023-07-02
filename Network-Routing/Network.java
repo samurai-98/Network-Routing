@@ -112,6 +112,10 @@ public class Network {
 
     private Router getSuccessor(Router router) {
         Router curr = router.right;
+
+        if (curr == null) {
+            return null;
+        }
         
         while (curr.left != null) {
             curr = curr.left;
@@ -135,10 +139,19 @@ public class Network {
                 return router.left;
             } else {
                 Router successor = getSuccessor(router.right);
-                router.name = successor.name;
-                router.ipAddress = successor.ipAddress;
-                router.subnetMask = successor.subnetMask;
-                router.right = removeHelper(router.right, successor.ipAddress);
+                if (successor != null) {
+                    router.name = successor.name;
+                    router.ipAddress = successor.ipAddress;
+                    router.subnetMask = successor.subnetMask;
+                    router.right = removeHelper(router.right, successor.ipAddress);
+                    router.height = Math.max(getHeight(router.left), getHeight(router.right)) + 1;
+                } else {
+                    Router tmp = router.left;
+                    tmp.right = router.right;
+                    
+                    return tmp;
+                }
+                
             }
         }
 
